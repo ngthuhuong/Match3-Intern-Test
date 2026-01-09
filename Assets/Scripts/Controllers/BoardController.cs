@@ -30,6 +30,9 @@ public class BoardController : MonoBehaviour
     private bool m_hintIsShown;
 
     private bool m_gameOver;
+    //personal code
+    private bool m_isTapping = false;
+    private BottomController _bottomController;
 
     public void StartGame(GameManager gameManager, GameSettings gameSettings)
     {
@@ -42,7 +45,7 @@ public class BoardController : MonoBehaviour
         m_cam = Camera.main;
 
         m_board = new Board(this.transform, gameSettings);
-
+        _bottomController = FindObjectOfType<BottomController>();
         Fill();
     }
 
@@ -90,7 +93,8 @@ public class BoardController : MonoBehaviour
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
             {
-                m_isDragging = true;
+                //m_isDragging = true;
+                m_isTapping = true; 
                 m_hitCollider = hit.collider;
             }
         }
@@ -99,7 +103,26 @@ public class BoardController : MonoBehaviour
         {
             ResetRayCast();
         }
-
+        
+        //handle tapping
+        if (Input.GetMouseButton(0) && m_isTapping)
+        {
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider != null)
+            {
+                if (m_hitCollider != null && m_hitCollider == hit.collider) //down and realease should be same
+                {
+                    Cell c = m_hitCollider.GetComponent<Cell>();
+                    //di chuyen Cell xuong Bottom
+                    if (c.IsMoved)
+                    {
+                        _bottomController.GetItem(c);
+                    }
+                }
+            }
+        }
+        
+        /**prior code
         if (Input.GetMouseButton(0) && m_isDragging)
         {
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -128,7 +151,8 @@ public class BoardController : MonoBehaviour
             {
                 ResetRayCast();
             }
-        }
+        }**/
+        
     }
 
     private void ResetRayCast()

@@ -41,14 +41,15 @@ public class Board
 
     private void CreateBoard()
     {
-        Vector3 origin = new Vector3(-boardSizeX * 0.5f + 0.5f, -boardSizeY * 0.5f + 0.5f, 0f);
+        Vector3 origin = new Vector3(-boardSizeX * 0.25f + 0.25f, -boardSizeY * 0.25f + 0.25f, 0f);
         GameObject prefabBG = Resources.Load<GameObject>(Constants.PREFAB_CELL_BACKGROUND);
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
             {
                 GameObject go = GameObject.Instantiate(prefabBG);
-                go.transform.position = origin + new Vector3(x, y, 0f);
+                Vector3 offset = new Vector3(x, y, 0f)*0.5f;
+                go.transform.position = origin + offset ;
                 go.transform.SetParent(m_root);
 
                 Cell cell = go.GetComponent<Cell>();

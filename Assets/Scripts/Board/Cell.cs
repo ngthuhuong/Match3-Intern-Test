@@ -19,6 +19,10 @@ public class Cell : MonoBehaviour
 
 
     public bool IsEmpty => Item == null;
+    
+    //personal code
+    private bool isMoved = false;
+    public bool IsMoved => isMoved;
 
     public void Setup(int cellX, int cellY)
     {
