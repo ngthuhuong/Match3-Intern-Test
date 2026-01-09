@@ -3,14 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using System.Linq;
 
 public class BottomController : MonoBehaviour
 {
     private Vector3 startPosition;
     private Vector3 defPos;
     private List<Cell> listCell;
-    
-    
     void Start()
     {
         defPos = gameObject.transform.position+ Vector3.left;
@@ -33,7 +32,41 @@ public class BottomController : MonoBehaviour
         view.AnimationMoveToBottom(startPosition);
         c.transform.DOMove(startPosition, 0.2f).OnComplete(() =>
         {
-            CheckMatches();
+            if (c != null && c.gameObject != null) 
+            {
+                CheckMatches();
+            }
+        });
+        
+    }
+
+    public void GetItemAuto(Cell c,bool isWinMode)
+    {
+        c.IsMoved = false;
+        Item view = c.Item; 
+        listCell.Add(c);
+        startPosition = defPos + (listCell.Count - 1) * 0.5f * Vector3.right;
+        view.AnimationMoveToBottom(startPosition);
+        c.transform.DOMove(startPosition, 0.2f).OnComplete(() =>
+        {
+            if (isWinMode && listCell.Count == 3)
+                    {
+                        List<Cell> cellsToRemove = new List<Cell>(listCell);
+                        
+                        foreach (var x in cellsToRemove)
+                        {
+                            listCell.Remove(x);
+                            x.ExplodeItem();
+                            x.transform.DOKill();
+                            if (x.Item != null && x.Item.View != null)
+                            {
+                                x.Item.View.DOKill();
+                            }
+                            GameObject.Destroy(x.gameObject);
+                        }
+                        if (listCell.Count == 0) startPosition = defPos;
+                        else startPosition = defPos + (listCell.Count - 1) * 0.5f * Vector3.right;
+                    }
         });
         
     }
@@ -71,6 +104,11 @@ public class BottomController : MonoBehaviour
                         {
                             listCell.Remove(x);
                             x.ExplodeItem();
+                            x.transform.DOKill();
+                            if (x.Item != null && x.Item.View != null)
+                            {
+                                x.Item.View.DOKill();
+                            }
                             GameObject.Destroy(x.gameObject);
                         }
                         if (listCell.Count == 0) startPosition = defPos;
@@ -99,5 +137,11 @@ public class BottomController : MonoBehaviour
     public bool isFull()
     {
         return listCell.Count == 5 ? true: false;
+    }
+
+    public void ClearBottom()
+    {
+        listCell.Clear();
+        UpdatePos();
     }
 }

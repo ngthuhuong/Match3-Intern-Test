@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class BoardController : MonoBehaviour
 {
@@ -60,7 +61,7 @@ public class BoardController : MonoBehaviour
     private void Fill()
     {
         m_board.Fill();
-        FindMatchesAndCollapse();
+       // FindMatchesAndCollapse();
     }
 
     private void OnGameStateChange(GameManager.eStateGame state)
@@ -130,9 +131,7 @@ public class BoardController : MonoBehaviour
                         _bottomController.GetItem(c);
                         if (m_board.GetRemainingCellCount() == 0)
                         {
-                            DOVirtual.DelayedCall(0.5f, () => {
-                                if (OnWin != null) OnWin(); 
-                            });
+                            OnWin();
                             return;
                         }
                         
@@ -140,6 +139,7 @@ public class BoardController : MonoBehaviour
 
                     if (_bottomController.isFull())
                     {
+                        _bottomController.ClearBottom();
                         OnGameStateChange(GameManager.eStateGame.GAME_OVER);
                         OnFullBottom();
                     }
@@ -181,6 +181,55 @@ public class BoardController : MonoBehaviour
         }**/
         
     }
+
+    public void StartAuto(bool isWinMode)
+    {
+        StartCoroutine(AutoRoutine(isWinMode));
+    }
+
+    private IEnumerator AutoRoutine(bool isWinMode)
+    {
+        while (!m_gameOver)
+        {
+            if (IsBusy || _bottomController.isFull())
+            {
+                yield return new WaitForSeconds(0.5f);
+                continue;
+            }
+
+            if (isWinMode)
+            {
+                Cell c = m_board.GetRandomAvailableCell();
+                if (c == null) yield break;
+                List<Cell> matches = m_board.GetCellsByType(c, 3);
+
+                foreach (var cell in matches)
+                {
+                    m_board.RemoveCell(cell); 
+                    _bottomController.GetItemAuto(cell, isWinMode);
+                    yield return new WaitForSeconds(0.5f);
+                }
+            }
+            else
+            {
+                Cell c = m_board.GetRandomAvailableCell();
+                if (c != null)
+                {
+                    m_board.RemoveCell(c);
+                    _bottomController.GetItemAuto(c,isWinMode);
+                    if (_bottomController.isFull()) OnFullBottom();
+                    yield return new WaitForSeconds(0.5f);
+                }
+            }
+
+            if (m_board.GetRemainingCellCount() == 0)
+            {
+                OnWin?.Invoke();
+                yield break;
+            }
+        }
+    }
+  
 
     private void ResetRayCast()
     {

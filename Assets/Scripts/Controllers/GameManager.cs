@@ -11,7 +11,9 @@ public class GameManager : MonoBehaviour
     public enum eLevelMode
     {
         TIMER,
-        MOVES
+        MOVES,
+        AUTO,
+        AUTO_LOSE
     }
 
     public enum eStateGame
@@ -21,7 +23,9 @@ public class GameManager : MonoBehaviour
         GAME_STARTED,
         PAUSE,
         GAME_OVER,
-        GAME_WIN
+        GAME_WIN,
+        GAME_AUTO_PLAY,
+        GAME_AUTO_LOSE
     }
 
     private eStateGame m_state;
@@ -99,9 +103,22 @@ public class GameManager : MonoBehaviour
             m_levelCondition = this.gameObject.AddComponent<LevelTime>();
             m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), this);
         }
+        else if (mode == eLevelMode.AUTO)
+        {
+            m_levelCondition = this.gameObject.AddComponent<LevelMoves>();
+            State = eStateGame.GAME_AUTO_PLAY;
+            m_boardController.StartAuto(true);
+        }
+        else if (mode == eLevelMode.AUTO_LOSE)
+        {
+            m_levelCondition = this.gameObject.AddComponent<LevelMoves>();
+            State = eStateGame.GAME_AUTO_LOSE;
+            m_boardController.StartAuto(false);
+        }
 
         m_levelCondition.ConditionCompleteEvent += GameOver;
 
+        
         State = eStateGame.GAME_STARTED;
     }
 
@@ -118,7 +135,6 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         State = eStateGame.GAME_WIN;
-
         if (m_levelCondition != null)
         {
             m_levelCondition.ConditionCompleteEvent -= GameOver;

@@ -69,6 +69,9 @@ public class UIMainManager : MonoBehaviour
             case GameManager.eStateGame.GAME_OVER:
                 ShowMenu<UIPanelGameOver>();
                 break;
+            case GameManager.eStateGame.GAME_WIN:
+                ShowMenu<UIPanelGameWin>();
+                break;
         }
     }
 
@@ -113,9 +116,14 @@ public class UIMainManager : MonoBehaviour
     {
         m_gameManager.LoadLevel(GameManager.eLevelMode.TIMER);
     }
-
+    public void LoadLevelAuto(bool isWinMode)
+    {
+        if(isWinMode) m_gameManager.LoadLevel(GameManager.eLevelMode.AUTO);
+        else if(!isWinMode) m_gameManager.LoadLevel(GameManager.eLevelMode.AUTO_LOSE);
+    }
     internal void ShowGameMenu()
     {
         m_gameManager.SetState(GameManager.eStateGame.GAME_STARTED);
     }
+    
 }

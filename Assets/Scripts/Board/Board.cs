@@ -696,7 +696,7 @@ public class Board
         {
             for (int y = 0; y < boardSizeY; y++)
             {
-                if(m_cells[x,y].IsEmpty) return;
+                if(m_cells[x,y]==null) return;
                 Cell cell = m_cells[x, y];
                 cell.Clear();
 
@@ -711,7 +711,6 @@ public class Board
         return m_cells.Length;
     }
 
-    // Hàm xóa Cell tại vị trí x, y
     public void RemoveCell(Cell c)
     {
         m_cells[c.BoardX, c.BoardY] = null;
@@ -725,5 +724,36 @@ public class Board
             if (cell != null) count++;
         }
         return count;
+    }
+
+    public Cell GetRandomAvailableCell()
+    {
+        List<Cell> available = new List<Cell>();
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                if (m_cells[x, y] != null && !m_cells[x, y].IsEmpty)
+                    available.Add(m_cells[x, y]);
+            }
+        }
+        if (available.Count == 0) return null;
+        return available[Random.Range(0, available.Count)];
+    }
+
+    public List<Cell> GetCellsByType(Cell c, int count)
+    {
+        List<Cell> result = new List<Cell>();
+        for (int x = 0; x < boardSizeX; x++) {
+            for (int y = 0; y < boardSizeY; y++) {
+                if (m_cells[x, y] != null && !m_cells[x, y].IsEmpty) {
+                    if (m_cells[x, y].IsSameType(c)) { 
+                        result.Add(m_cells[x, y]);
+                        if (result.Count >= count) return result;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }
