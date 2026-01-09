@@ -46,6 +46,7 @@ public class BoardController : MonoBehaviour
 
         m_board = new Board(this.transform, gameSettings);
         _bottomController = FindObjectOfType<BottomController>();
+        if(_bottomController == null) Debug.Log("cant find bottom");
         Fill();
     }
 
@@ -67,7 +68,8 @@ public class BoardController : MonoBehaviour
                 break;
             case GameManager.eStateGame.GAME_OVER:
                 m_gameOver = true;
-                StopHints();
+                //StopHints();
+                Debug.Log("Loseee");
                 break;
         }
     }
@@ -75,7 +77,10 @@ public class BoardController : MonoBehaviour
 
     public void Update()
     {
-        if (m_gameOver) return;
+        if (m_gameOver)
+        {
+            return;
+        };
         if (IsBusy) return;
 
         if (!m_hintIsShown)
@@ -99,27 +104,24 @@ public class BoardController : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonUp(0))
+       /** if (Input.GetMouseButtonUp(0))
         {
             ResetRayCast();
-        }
+        }**/
         
         //handle tapping
-        if (Input.GetMouseButton(0) && m_isTapping)
+        if (Input.GetMouseButtonUp(0) && m_isTapping)
         {
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
-            {
                 if (m_hitCollider != null && m_hitCollider == hit.collider) //down and realease should be same
                 {
                     Cell c = m_hitCollider.GetComponent<Cell>();
-                    //di chuyen Cell xuong Bottom
                     if (c.IsMoved)
                     {
                         _bottomController.GetItem(c);
                     }
+                    if(_bottomController.isFull()) OnGameStateChange(GameManager.eStateGame.GAME_OVER);
                 }
-            }
         }
         
         /**prior code

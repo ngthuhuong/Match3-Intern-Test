@@ -21,8 +21,8 @@ public class Cell : MonoBehaviour
     public bool IsEmpty => Item == null;
     
     //personal code
-    private bool isMoved = false;
-    public bool IsMoved => isMoved;
+    private bool isMoved = true;
+    public bool IsMoved { get=>isMoved ; set=>isMoved=value; }
 
     public void Setup(int cellX, int cellY)
     {

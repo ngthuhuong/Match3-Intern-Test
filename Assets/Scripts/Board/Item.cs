@@ -40,6 +40,12 @@ public class Item
         View.DOMove(Cell.transform.position, 0.2f);
     }
 
+    internal void AnimationMoveToBottom(Vector3 pos)
+    {
+        if (View == null) return;
+
+        View.DOMove(pos, 0.2f);
+    }
     public void SetViewPosition(Vector3 pos)
     {
         if (View)
