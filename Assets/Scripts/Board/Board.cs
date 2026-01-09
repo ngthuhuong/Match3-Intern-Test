@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Board
 {
@@ -72,24 +73,51 @@ public class Board
         }
 
     }
+    
 
     internal void Fill()
     {
+        //tao 1 board du dk
+        List<NormalItem.eNormalType> ntypes = new List<NormalItem.eNormalType>();
+        for (int i = 0; i < 7; i++)
+        {
+            for (int j = 0; j < (boardSizeX * boardSizeY / 7); j++)
+            {
+                ntypes.Add((NormalItem.eNormalType)i);
+            }
+        }
+        //shuffle
+        for (int i = 0; i < ntypes.Count; i++)
+        {
+            NormalItem.eNormalType temp = ntypes[i];
+            int random = Random.Range(i,ntypes.Count);
+            ntypes[i] = ntypes[random];
+            ntypes[random] = temp;
+        }
+
+        int cindex = 0;
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
             {
+               
                 Cell cell = m_cells[x, y];
                 NormalItem item = new NormalItem();
-
+                
                 List<NormalItem.eNormalType> types = new List<NormalItem.eNormalType>();
                 if (cell.NeighbourBottom != null)
                 {
-                    NormalItem nitem = cell.NeighbourBottom.Item as NormalItem;
-                    if (nitem != null)
+                    if (cindex < ntypes.Count())
                     {
-                        types.Add(nitem.ItemType);
+                      NormalItem nitem = cell.NeighbourBottom.Item as NormalItem;
+                        if (nitem != null)
+                        {
+                            types.Add(nitem.ItemType);
+                        }
+
+                        cindex++;
                     }
+                    
                 }
 
                 if (cell.NeighbourLeft != null)
@@ -101,7 +129,8 @@ public class Board
                     }
                 }
 
-                item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                //item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                item.SetType(ntypes[x*boardSizeY + y]);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -667,6 +696,7 @@ public class Board
         {
             for (int y = 0; y < boardSizeY; y++)
             {
+                if(m_cells[x,y].IsEmpty) return;
                 Cell cell = m_cells[x, y];
                 cell.Clear();
 
@@ -674,5 +704,26 @@ public class Board
                 m_cells[x, y] = null;
             }
         }
+    }
+
+    public int GetCellNumber()
+    {
+        return m_cells.Length;
+    }
+
+    // Hàm xóa Cell tại vị trí x, y
+    public void RemoveCell(Cell c)
+    {
+        m_cells[c.BoardX, c.BoardY] = null;
+    }
+
+    public int GetRemainingCellCount()
+    {
+        int count = 0;
+        foreach (var cell in m_cells)
+        {
+            if (cell != null) count++;
+        }
+        return count;
     }
 }

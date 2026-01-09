@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
         GAME_STARTED,
         PAUSE,
         GAME_OVER,
+        GAME_WIN
     }
 
     private eStateGame m_state;
@@ -85,6 +86,8 @@ public class GameManager : MonoBehaviour
     {
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings);
+        m_boardController.OnFullBottom += GameOver;
+        m_boardController.OnWin += GameWin;
 
         if (mode == eLevelMode.MOVES)
         {
@@ -102,8 +105,30 @@ public class GameManager : MonoBehaviour
         State = eStateGame.GAME_STARTED;
     }
 
+    public void GameWin()
+    {
+        StartCoroutine(WaitWinCondition());
+    }
+    private IEnumerator WaitWinCondition()
+    { 
+        while (m_boardController != null && m_boardController.IsBusy)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+
+        yield return new WaitForSeconds(0.5f);
+        State = eStateGame.GAME_WIN;
+
+        if (m_levelCondition != null)
+        {
+            m_levelCondition.ConditionCompleteEvent -= GameOver;
+            Destroy(m_levelCondition);
+            m_levelCondition = null;
+        }
+    }
     public void GameOver()
     {
+        if (State == eStateGame.GAME_WIN) return;
         StartCoroutine(WaitBoardController());
     }
 

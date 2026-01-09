@@ -11,7 +11,6 @@ public class BottomController : MonoBehaviour
     private List<Cell> listCell;
     
     
-    
     void Start()
     {
         defPos = gameObject.transform.position+ Vector3.left;
@@ -19,17 +18,22 @@ public class BottomController : MonoBehaviour
         listCell = new List<Cell>();
     }
 
+    public void UpdatePos()
+    {
+        defPos = gameObject.transform.position+ Vector3.left;
+        startPosition = defPos ;
+    }
+
     public void GetItem(Cell c)
     {
         c.IsMoved = false;
         Item view = c.Item; 
         listCell.Add(c);
+        startPosition = defPos + (listCell.Count - 1) * 0.5f * Vector3.right;
         view.AnimationMoveToBottom(startPosition);
         c.transform.DOMove(startPosition, 0.2f).OnComplete(() =>
         {
             CheckMatches();
-            Rearrage();
-            startPosition += new Vector3(0.5f, 0f, 0f);
         });
         
     }
@@ -38,6 +42,7 @@ public class BottomController : MonoBehaviour
     {
         for (int i = 0; i < listCell.Count; i++)
         {
+            if (listCell[i] == null) continue;
             Vector3 offset = defPos + i * 0.5f * Vector3.right;
             listCell[i].Item.AnimationMoveToBottom(offset);
             listCell[i].transform.DOMove(offset, 0.2f);
@@ -47,26 +52,33 @@ public class BottomController : MonoBehaviour
     public void CheckMatches()
     {
         List<Cell> match = new List<Cell>();
-        for (int i = 0; i < listCell.Count-1; i++)
+        for (int i = 0; i < listCell.Count; i++)
         {
-            for (int j = 1; j < listCell.Count; j++)
+            if (listCell[i] == null) continue;
+
+            for (int j = i + 1; j < listCell.Count; j++)
             {
+                if (listCell[j] == null) continue;
+
                 if (listCell[i].IsSameType(listCell[j]))
                 {
-                    if(j>i+1) Swap(listCell[j],listCell[i+1]);
-                    if(!match.Contains(listCell[i])) match.Add(listCell[i]);
+                    if (!match.Contains(listCell[i])) match.Add(listCell[i]);
                     if (!match.Contains(listCell[j])) match.Add(listCell[j]);
+
                     if (match.Count == 3)
                     {
                         foreach (var x in match)
                         {
+                            listCell.Remove(x);
                             x.ExplodeItem();
                             GameObject.Destroy(x.gameObject);
-                            listCell.Remove(x);
-                            startPosition-=  new Vector3(0.5f, 0f, 0f);
                         }
+                        if (listCell.Count == 0) startPosition = defPos;
+                        else startPosition = defPos + (listCell.Count - 1) * 0.5f * Vector3.right;
+                        match.Clear();
+                        Rearrage();
+                        return; 
                     }
-                    
                 }
             }
             match.Clear();

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameSettings : ScriptableObject
 {
-    public int BoardSizeX = 6;
+    public int BoardSizeX = 7;
 
     public int BoardSizeY = 6;
 

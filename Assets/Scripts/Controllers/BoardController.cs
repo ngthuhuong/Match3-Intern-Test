@@ -33,6 +33,8 @@ public class BoardController : MonoBehaviour
     //personal code
     private bool m_isTapping = false;
     private BottomController _bottomController;
+    public Action OnWin;
+    public Action OnFullBottom;
 
     public void StartGame(GameManager gameManager, GameSettings gameSettings)
     {
@@ -45,7 +47,12 @@ public class BoardController : MonoBehaviour
         m_cam = Camera.main;
 
         m_board = new Board(this.transform, gameSettings);
-        _bottomController = FindObjectOfType<BottomController>();
+        if (_bottomController == null)
+        {
+            _bottomController = FindObjectOfType<BottomController>();
+        }
+        _bottomController.UpdatePos();
+       
         if(_bottomController == null) Debug.Log("cant find bottom");
         Fill();
     }
@@ -69,7 +76,7 @@ public class BoardController : MonoBehaviour
             case GameManager.eStateGame.GAME_OVER:
                 m_gameOver = true;
                 //StopHints();
-                Debug.Log("Loseee");
+                //Debug.Log("Loseee");
                 break;
         }
     }
@@ -89,7 +96,7 @@ public class BoardController : MonoBehaviour
             if (m_timeAfterFill > m_gameSettings.TimeForHint)
             {
                 m_timeAfterFill = 0f;
-                ShowHint();
+                //ShowHint();
             }
         }
 
@@ -112,16 +119,34 @@ public class BoardController : MonoBehaviour
         //handle tapping
         if (Input.GetMouseButtonUp(0) && m_isTapping)
         {
+            OnMoveEvent();
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
                 if (m_hitCollider != null && m_hitCollider == hit.collider) //down and realease should be same
                 {
                     Cell c = m_hitCollider.GetComponent<Cell>();
                     if (c.IsMoved)
                     {
+                        m_board.RemoveCell(c);
                         _bottomController.GetItem(c);
+                        if (m_board.GetRemainingCellCount() == 0)
+                        {
+                            DOVirtual.DelayedCall(0.5f, () => {
+                                if (OnWin != null) OnWin(); 
+                            });
+                            return;
+                        }
+                        
                     }
-                    if(_bottomController.isFull()) OnGameStateChange(GameManager.eStateGame.GAME_OVER);
+
+                    if (_bottomController.isFull())
+                    {
+                        OnGameStateChange(GameManager.eStateGame.GAME_OVER);
+                        OnFullBottom();
+                    }
+                    
                 }
+
+                m_hitCollider = null;
         }
         
         /**prior code
@@ -195,7 +220,6 @@ public class BoardController : MonoBehaviour
             else
             {
                 OnMoveEvent();
-
                 CollapseMatches(matches, cell2);
             }
         }
